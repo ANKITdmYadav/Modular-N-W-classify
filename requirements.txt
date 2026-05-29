@@ -10,4 +10,6 @@ dotenv
 pymongo
 python-dotenv
 certifi
+optuna
+mlflow
 # -e .
