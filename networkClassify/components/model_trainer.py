@@ -1,6 +1,6 @@
 import os
 import sys
-# import mlflow,mlflow.sklearn
+import mlflow
 
 from networkClassify.exception.exception import NetworkSecurityException 
 from networkClassify.logging.logger import logging
@@ -33,14 +33,14 @@ from sklearn.ensemble import (
 # e4d0b5b2adac39bdb5bc9ac520d96db2aad7e342
 
 
-# import dagshub
+import dagshub
 
 # dagshub.auth.add_app_token(
 #     username=os.getenv("DAGSHUB_USER"),
 #     token=os.getenv("DAGSHUB_TOKEN"),
 # )
 
-# dagshub.init(repo_owner='ankityadavdm', repo_name='ML-network-project', mlflow=True)
+dagshub.init(repo_owner='ankityadavdm', repo_name='Modular-N-W-classify', mlflow=True)
 
 
 
@@ -53,28 +53,34 @@ class ModelTrainer:
         except Exception as e:
             raise NetworkSecurityException(e,sys)
         
-    def track_mlflow(self,best_model,classificationmetric):
+    def track_mlflow(self,best_model,best_model_name,train_metric,test_metric):
+        # mlflow.set_tracking_uri("mlruns")
+        mlflow.set_experiment("Network_Classify")
+
         with mlflow.start_run():
-            f1_score=classificationmetric.f1_score
-            precision_score=classificationmetric.precision_score
-            recall_score=classificationmetric.recall_score
-            mlflow.log_metric("f1_score",f1_score)
-            mlflow.log_metric("precision",precision_score)
-            mlflow.log_metric("recall_score",recall_score)
-            # mlflow.sklearn.log_model(best_model,"model")
-            # above can't be done DagsHub cannot store models inside MLflow automatically.
+            logging.info("MLFLOW TRACKING STARTED")
+            mlflow.log_param("model_name",best_model_name)
+            mlflow.log_metric("train_accuracy",train_metric.accuracy_score)
+            mlflow.log_metric("test_accuracy",test_metric.accuracy_score)
+            mlflow.log_metric("train_f1_score",train_metric.f1_score)
+            mlflow.log_metric("test_f1_score",test_metric.f1_score)
+            mlflow.log_metric("train_precision",train_metric.precision_score)
+            mlflow.log_metric("test_precision",test_metric.precision_score)
+            mlflow.log_metric("train_recall",train_metric.recall_score)
+            mlflow.log_metric("test_recall",test_metric.recall_score)
 
-            save_object("final_model/model.pkl", best_model)
+            mlflow.sklearn.log_model(
+                sk_model=best_model,
+                artifact_path="model"
+            )
+        logging.info("MLFLOW TRACKING ENDED")
 
-            # Upload to DagsHub force
-            mlflow.log_artifact("final_model/model.pkl")
-        
-        
+    
     def train_model(self,X_train,y_train,x_test,y_test):
         models = {
                 "Random Forest": RandomForestClassifier(verbose=1),
                 "Decision Tree": DecisionTreeClassifier(),
-                # "Gradient Boosting": GradientBoostingClassifier(verbose=1),
+                "Gradient Boosting": GradientBoostingClassifier(verbose=1),
             }
 
         model_report:dict=evaluate_models(X_train=X_train,y_train=y_train,X_test=x_test,y_test=y_test,
@@ -106,6 +112,13 @@ class ModelTrainer:
         classification_test_metric=get_classification_score(y_true=y_test,y_pred=y_test_pred)
         print(classification_test_metric)
         # self.track_mlflow(best_model,classification_test_metric,)
+
+        self.track_mlflow(
+            best_model=best_model,
+            best_model_name=best_model_name,
+            train_metric=classification_train_metric,
+            test_metric=classification_test_metric
+        )
 
         preprocessor = load_object(file_path=self.data_transformation_artifact.transformed_object_file_path)
         encoder=load_object(file_path=self.data_transformation_artifact.label_encoder_file_path)
