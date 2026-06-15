@@ -20,12 +20,14 @@ if __name__=='__main__':
         data_transformation_config=DataTransformationConfig(trainingPipelineConfig)
         logging.info("data Transformation started")
         data_transformation=DataTransformation(dataingestionartifact,data_transformation_config)
-        data_transformation.initiate_data_transformation()
+        
         data_transformation_artifact=data_transformation.initiate_data_transformation()
         print(data_transformation_artifact)
         logging.info("data transformation completed")
 
         logging.info("Model Training Started")
+
+        
         model_trainer_config=ModelTrainerConfig(trainingPipelineConfig)
         model_trainer=ModelTrainer(model_trainer_config=model_trainer_config,data_transformation_artifact=data_transformation_artifact)
         model_trainer_artifact=model_trainer.initiate_model_trainer()

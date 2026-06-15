@@ -80,7 +80,7 @@ class ModelTrainer:
         models = {
                 "Random Forest": RandomForestClassifier(verbose=1),
                 "Decision Tree": DecisionTreeClassifier(),
-                "Gradient Boosting": GradientBoostingClassifier(verbose=1),
+                # "Gradient Boosting": GradientBoostingClassifier(verbose=1),
             }
 
         model_report:dict=evaluate_models(X_train=X_train,y_train=y_train,X_test=x_test,y_test=y_test,

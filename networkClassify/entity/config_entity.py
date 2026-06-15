@@ -2,8 +2,8 @@ from datetime import datetime
 import os
 from networkClassify.constants import training_pipeline
 
-print(training_pipeline.PIPELINE_NAME)
-print(training_pipeline.ARTIFACT_DIR)
+print("PIPELINE NAME ",training_pipeline.PIPELINE_NAME)
+print("ARTIFACT DIRECTORY " ,training_pipeline.ARTIFACT_DIR)
 
 class TrainingPipelineConfig:
     def __init__(self,timestamp=datetime.now()):
